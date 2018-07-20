@@ -165,7 +165,7 @@ def download_survey(survey_id):
     logging.info(f'downloading survey {survey_id}')
     with requests.Session() as session:
         session.headers.update(HEADERS)
-        session.cookies.update({'PHPSESSID': os.environ['PHPSESSID']})
+        session.cookies.update({'PHPSESSID': os.environ['PHPSESSID'], 'appsact': os.environ['APPSACT']})
 
         download_csv(session, survey_id)
         download_pdf(session, survey_id)
