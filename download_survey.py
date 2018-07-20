@@ -134,7 +134,7 @@ def download_word(session, survey_id):
     # Download the data
     r = session.post(
         'https://app.surveygizmo.com/projects/wordexport',
-        headers={'Referer': 'https://app.surveygizmo.com/projects/download/id/3227678'},
+        headers={'Referer': f'https://app.surveygizmo.com/projects/download/id/{survey_id}'},
         data={'id': survey_id,
               'include-page-desc': 'true',
               'include-ids': 'true',
@@ -167,7 +167,7 @@ def download_survey(survey_id):
         session.headers.update(HEADERS)
         session.cookies.update({'PHPSESSID': os.environ['PHPSESSID'], 'appsact': os.environ['APPSACT']})
 
-        #download_csv(session, survey_id)
+        download_csv(session, survey_id)
         download_pdf(session, survey_id)
         download_word(session, survey_id)
 
