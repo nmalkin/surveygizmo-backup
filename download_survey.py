@@ -1,6 +1,7 @@
 import logging
 import os.path
 import re
+import sys
 import time
 
 import requests
@@ -11,7 +12,7 @@ WAIT_TIME = 3  # seconds
 """
 How long to wait before checking if export is ready
 """
-TOO_LONG = 90  # seconds
+TOO_LONG = 300  # seconds
 """
 Don't wait more than this for an export
 """
@@ -34,11 +35,16 @@ def download_csv(session, survey_id):
         return
 
     # Trigger the export
-    r = session.get(f"https://app.surveygizmo.com/Reports/simpleexport/?id={survey_id}&view=6073")
+    response = session.get(f"https://app.surveygizmo.com/Reports/simpleexport/?id={survey_id}&view=6073")
 
     # Extract the report ID
-    page = r.text
-    match = re.search('var reportID = (\d+);', page)
+    page = response.text
+    match = re.search(r'var reportID = (\d+);', page)
+    if not match:
+        logging.error("""Couldn't find reportID in export page.
+        Possible explanations: the page may have changed, the site is returning
+        an error, or you are not logged in.""")
+        sys.exit(1)
     report_id = match.group(1)
     logging.debug(f'report ID is {report_id}')
 
@@ -49,23 +55,33 @@ def download_csv(session, survey_id):
         time.sleep(WAIT_TIME)
         waited += WAIT_TIME
 
-        r = session.get(f"https://app.surveygizmo.com/Reports/simple-export-percent-check?reportid={report_id}")
-        percentage = r.json()['response']['percent']
+        response = session.get(
+            f"https://app.surveygizmo.com/Reports/simple-export-percent-check?reportid={report_id}")
+        percentage = response.json()['response']['percent']
+        logging.debug('export reports %i%% ready', percentage)
 
         if percentage == 100:
             break
         elif waited > TOO_LONG:
-            logging.warning(f'waited {TOO_LONG}; trying to go ahead with the export.')
-            break
+            logging.error(f'waited {TOO_LONG} seconds; giving up')
+            return
 
     # Download the data
-    r = session.get(
+    response = session.get(
         f'https://app.surveygizmo.com/Reports/simpleexportdownload?sid={survey_id}&report_id={report_id}&mode=html')
-    data = r.text
+    data = response.text
+
+    if not data:
+        logging.error('data is missing. exiting.')
+        return
+    elif data.count('\n') <= 2:
+        logging.error(
+            'data contains only header. Export assumed failed. Exiting.')
+        return
 
     # Store it
-    with open(filename, 'w') as f:
-        f.write(data)
+    with open(filename, 'w') as out:
+        out.write(data)
 
 
 def download_pdf(session, survey_id):
