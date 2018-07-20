@@ -1,7 +1,6 @@
 import logging
 import os.path
 import re
-import sys
 import time
 
 import requests
@@ -43,7 +42,7 @@ def download_csv(session, survey_id):
         logging.error("""Couldn't find reportID in export page.
         Possible explanations: the page may have changed, the site is returning
         an error, or you are not logged in.""")
-        sys.exit(1)
+        return
     report_id = match.group(1)
     logging.debug(f'report ID is {report_id}')
 
