@@ -8,7 +8,7 @@ import requests
 
 logging.basicConfig(level=logging.DEBUG)
 
-WAIT_TIME = 3  # seconds
+WAIT_TIME = 10  # seconds
 """
 How long to wait before checking if export is ready
 """
