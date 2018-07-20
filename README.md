@@ -10,7 +10,7 @@ Warning
 -------
 This code doesn't use formal APIs; it's reverse-engineered from the SG website.
 As such, it's liable to be more brittle and break without notice.
-It worked as of September 2017.
+It worked as of July 2018.
 
 Prerequisites
 --------------
