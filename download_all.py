@@ -5,7 +5,7 @@ import threading
 from download_survey import download_survey
 from get_ids import get_ids
 
-NUM_WORKER_THREADS = 4
+NUM_WORKER_THREADS = 8
 
 
 def worker(q: queue.Queue, thread_id: int):
