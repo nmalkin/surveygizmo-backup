@@ -73,9 +73,9 @@ def download_csv(session, survey_id):
         logging.error('data is missing. exiting.')
         return
     elif data.count('\n') <= 2:
-        logging.error(
-            'data contains only header. Export assumed failed. Exiting.')
-        return
+        logging.warning(
+            'data contains only header. This sometimes happens when an export assumed failed'
+            "(or maybe this survey just didn't have any data).")
 
     # Store it
     with open(filename, 'w') as out:
