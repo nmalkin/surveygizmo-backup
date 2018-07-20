@@ -104,12 +104,13 @@ def download_pdf(session, survey_id):
 
         r = session.get(f"https://app.surveygizmo.com/projects/pdf-export-percent-check?sid={survey_id}")
         percentage = r.json()['response']['percent']
+        logging.debug('export reports %i%% ready', percentage)
 
         if percentage == 100:
             break
         elif waited > TOO_LONG:
-            logging.warning(f'waited {TOO_LONG}; trying to go ahead with the export.')
-            break
+            logging.error(f'waited {TOO_LONG} seconds; giving up')
+            return
 
     # Download the data
     r = session.get(
