@@ -4,7 +4,7 @@ import queue
 import threading
 import typing
 
-from download_survey import download_survey
+import download_survey
 import get_ids
 
 
@@ -17,7 +17,7 @@ def worker(q: queue.Queue, thread_id: int):
         logging.debug(f'survey {survey} assigned to worker {thread_id}')
 
         try:
-            download_survey(survey)
+            download_survey.download_survey(survey)
         except Exception as e:
             logging.error(f'something went wrong with survey {survey}: {e}')
 
@@ -47,7 +47,7 @@ def download_parallel(num_worker_threads: int, all_surveys: typing.Iterable[str]
 
 def download_sequentially(all_surveys: typing.Iterable[str]):
     for survey in all_surveys:
-        download_survey(survey)
+        download_survey.download_survey(survey)
 
 
 def main():
@@ -56,7 +56,15 @@ def main():
                         help='How many downloads to do in parallel')
     parser.add_argument('--shuffle', '-s', action='store_true',
                         help='Process surveys in random order')
+    parser.add_argument('--wait', '-w', default=30, type=int,
+                        help='How long to wait before checking if export is ready')
+    parser.add_argument('--timeout', '-t', default=600, type=int,
+                        help="Don't wait more than this for an export")
     args = parser.parse_args()
+
+    # Set time-related configs
+    download_survey.WAIT_TIME = args.wait
+    download_survey.TOO_LONG = args.timeout
 
     # Get IDs in random order or sequentially
     if args.shuffle:
