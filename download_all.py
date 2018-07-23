@@ -1,9 +1,10 @@
 import logging
 import queue
 import threading
+import typing
 
 from download_survey import download_survey
-from get_ids import get_ids
+import get_ids
 
 NUM_WORKER_THREADS = 8
 
@@ -24,10 +25,8 @@ def worker(q: queue.Queue, thread_id: int):
         q.task_done()
 
 
-def download_parallel():
-    all_surveys = get_ids()
-
-    q = queue.Queue()
+def download_parallel(all_surveys: typing.Iterable[str]):
+    q: queue.Queue = queue.Queue()
     threads = []
     for i in range(NUM_WORKER_THREADS):
         t = threading.Thread(target=worker, args=(q, i))
@@ -47,13 +46,16 @@ def download_parallel():
         t.join()
 
 
-def download_sequentially():
-    all_surveys = get_ids()
+def download_sequentially(all_surveys: typing.Iterable[str]):
     for survey in all_surveys:
         download_survey(survey)
 
 
 if __name__ == '__main__':
-    download_parallel()
-    # Alternately,
-    # download_sequentially()
+    # Get IDs in random order or sequentially
+    # all_surveys = get_ids.get_ids()
+    all_surveys = get_ids.get_shuffled_ids()
+
+    # Download in parallel or sequentially
+    download_parallel(all_surveys)
+    # download_sequentially(all_surveys)
