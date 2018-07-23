@@ -26,4 +26,5 @@ Usage
 4. The code piggy-backs on your existing session cookies to run. The easiest way to get them is to open your browser's Developer Tools, go to the Network panel, and make a request (e.g., refresh the dashboard page). Click on one of the requests and click on the Cookies tab (or equivalent). There will be two you need, `PHPSESSID` and `appsact`.
 5. Make the cookie values available to the scripts: `export PHPSESSID=<value>;export APPSACT=<other value>`
 6. Now you should be ready to go. Download all your surveys with `python download_all.py`.
-7. Note that the code runs several downloads in parallel to speed things up. If that's not working, or you don't need the parallelism, you can change that easily; see `download_all.py`.
+7. If you'd like to run several downloads in parallel to speed things up, you can specify the number of threads as a flag to the main script: `python download_all.py --parallel 4`.
+8. If you're restarting the script a lot, you may want to try download the surveys in random order. There's a flag for that too: `python download_all.py --shuffle`.

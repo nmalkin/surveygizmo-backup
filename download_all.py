@@ -1,3 +1,4 @@
+import argparse
 import logging
 import queue
 import threading
@@ -5,8 +6,6 @@ import typing
 
 from download_survey import download_survey
 import get_ids
-
-NUM_WORKER_THREADS = 8
 
 
 def worker(q: queue.Queue, thread_id: int):
@@ -25,10 +24,10 @@ def worker(q: queue.Queue, thread_id: int):
         q.task_done()
 
 
-def download_parallel(all_surveys: typing.Iterable[str]):
+def download_parallel(num_worker_threads: int, all_surveys: typing.Iterable[str]):
     q: queue.Queue = queue.Queue()
     threads = []
-    for i in range(NUM_WORKER_THREADS):
+    for i in range(num_worker_threads):
         t = threading.Thread(target=worker, args=(q, i))
         t.start()
         threads.append(t)
@@ -40,7 +39,7 @@ def download_parallel(all_surveys: typing.Iterable[str]):
     q.join()
 
     # Stop workers
-    for i in range(NUM_WORKER_THREADS):
+    for i in range(num_worker_threads):
         q.put(None)
     for t in threads:
         t.join()
@@ -51,11 +50,26 @@ def download_sequentially(all_surveys: typing.Iterable[str]):
         download_survey(survey)
 
 
-if __name__ == '__main__':
+def main():
+    parser = argparse.ArgumentParser(description='Download all surveys')
+    parser.add_argument('--parallel', '-p', default=1, type=int,
+                        help='How many downloads to do in parallel')
+    parser.add_argument('--shuffle', '-s', action='store_true',
+                        help='Process surveys in random order')
+    args = parser.parse_args()
+
     # Get IDs in random order or sequentially
-    # all_surveys = get_ids.get_ids()
-    all_surveys = get_ids.get_shuffled_ids()
+    if args.shuffle:
+        all_surveys = get_ids.get_shuffled_ids()
+    else:
+        all_surveys = get_ids.get_ids()
 
     # Download in parallel or sequentially
-    download_parallel(all_surveys)
-    # download_sequentially(all_surveys)
+    if args.parallel == 1:
+        download_sequentially(all_surveys)
+    else:
+        download_parallel(args.parallel, all_surveys)
+
+
+if __name__ == '__main__':
+    main()
